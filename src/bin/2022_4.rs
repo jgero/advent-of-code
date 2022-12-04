@@ -30,14 +30,12 @@ impl Range {
 
 // expect a string like "12-12,12-12" and returns a vector of ranges
 fn parse_assignments(input: &str) -> Vec<Range> {
-    input.split(",").map(|el| -> Range { parse_range(el)}).collect()
+    input.split(",").map(|el| parse_range(el)).collect()
 }
 
 // expect a string of the format "12-34" and return it as range
 fn parse_range(input: &str) -> Range {
-    let parts: Vec<u16> = input.split("-").map(|el| -> u16 {
-        el.parse::<u16>().unwrap()
-    }).collect();
+    let parts: Vec<u16> = input.split("-").map(|el| el.parse::<u16>().unwrap()).collect();
     return Range{
         min: parts[0],
         max: parts[1]
