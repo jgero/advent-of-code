@@ -13,39 +13,34 @@ fn main() {
 }
 
 struct CardStack {
-    original_cards: HashMap<usize, Card>,
-    stack: Vec<usize>
+    original_cards: Vec<Card>
 }
 
 impl CardStack {
     fn new(input: &str) -> CardStack {
-        let mut original_cards: HashMap<usize, Card> = HashMap::new();
-        let mut stack = Vec::new();
-        input.lines()
-            .for_each(|it| {
-                let c = Card::try_from(it).unwrap();
-                stack.push(c.id);
-                original_cards.insert(c.id, c);
-            });
-        CardStack { original_cards, stack }
+        let original_cards = input.lines()
+            .map(|it| Card::try_from(it).unwrap())
+            .collect();
+        CardStack { original_cards }
     }
 
-    // oof, this runs for 33 seconds, what's the problem?
     fn play_stack_game(&mut self) -> usize {
-        let mut i = 0;
-        while i < self.stack.len() {
-            let id = self.stack.get(i).unwrap().clone();
-            let next = self.original_cards.get(&id).unwrap().get_winnig_number_amount();
-            if next == 0 {
-                i += 1;
-                continue;
+        let mut stack: HashMap<usize, usize> = HashMap::new();
+        self.original_cards.iter().for_each(|c| {
+             stack.insert(c.id, 1);
+        });
+        self.original_cards.iter().for_each(|c| {
+            let upper_bound_copies = c.get_winnig_number_amount();
+            if upper_bound_copies == 0 {
+                return;
             }
-            for it in 1..=next {
-                self.stack.push(id + it);
+            for copy_index in (c.id + 1)..=(c.id + upper_bound_copies) {
+                let stack_val = stack.get(&c.id).unwrap().clone();
+                // println!("curr {}", curr);
+                stack.insert(copy_index, stack_val + stack.get(&copy_index).or(Some(&1)).unwrap());
             }
-            i += 1;
-        }
-        return self.stack.len();
+        });
+        return stack.values().map(|it| *it).reduce(|a,b| a+b).unwrap();
     }
 }
 
